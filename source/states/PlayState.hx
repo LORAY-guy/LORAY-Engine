@@ -17,6 +17,7 @@ import backend.WeekData;
 import backend.Song;
 import backend.Section;
 import backend.Rating;
+import backend.Credits.CreditsData;
 
 import flixel.FlxBasic;
 import flixel.FlxObject;
@@ -264,6 +265,12 @@ class PlayState extends MusicBeatState
 	public var startCallback:Void->Void = null;
 	public var endCallback:Void->Void = null;
 
+	public var loraySign:FlxSprite;
+	public var lorayTxt:FlxText;
+
+	private var creditsJSON:CreditsData = null;
+	var creditsStep:Int = 0;
+
 	override public function create()
 	{
 		//trace('Playback Rate: ' + playbackRate);
@@ -383,15 +390,8 @@ class PlayState extends MusicBeatState
 
 		switch (curStage)
 		{
-			case 'stage': new states.stages.StageWeek1(); //Week 1
-			case 'spooky': new states.stages.Spooky(); //Week 2
-			case 'philly': new states.stages.Philly(); //Week 3
-			case 'limo': new states.stages.Limo(); //Week 4
-			case 'mall': new states.stages.Mall(); //Week 5 - Cocoa, Eggnog
-			case 'mallEvil': new states.stages.MallEvil(); //Week 5 - Winter Horrorland
-			case 'school': new states.stages.School(); //Week 6 - Senpai, Roses
-			case 'schoolEvil': new states.stages.SchoolEvil(); //Week 6 - Thorns
-			case 'tank': new states.stages.Tank(); //Week 7 - Ugh, Guns, Stress
+			case 'stage': new states.stages.StageWeek1(); // Week 1
+			case s if (s.startsWith('loray')): new states.stages.LorayStage();
 		}
 
 		if(isPixelStage) {
@@ -557,6 +557,22 @@ class PlayState extends MusicBeatState
 		if(ClientPrefs.data.downScroll) {
 			botplayTxt.y = timeBar.y - 78;
 		}
+
+		loraySign = new FlxSprite(-851, 140).loadGraphic(Paths.image('newOurpleHUD/loraySign'));
+		loraySign.scrollFactor.set();
+		loraySign.setGraphicSize(Std.int(loraySign.width * 0.7));
+		loraySign.antialiasing = ClientPrefs.data.antialiasing;
+		add(loraySign);
+
+		lorayTxt = new FlxText(-626, 239, 300, 'Coded by\nLORAY', 48);
+		lorayTxt.setFormat(Paths.font("ourple.ttf"), 48, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		add(lorayTxt);
+
+		creditsJSON = backend.Credits.getCreditsFile(SONG.song);
+
+		if (creditsJSON == null)
+			creditsJSON = backend.Credits.dummy();
+
 		strumLineNotes.cameras = [camHUD];
 		grpNoteSplashes.cameras = [camHUD];
 		notes.cameras = [camHUD];
@@ -570,22 +586,25 @@ class PlayState extends MusicBeatState
 		timeBar.cameras = [camHUD];
 		timeTxt.cameras = [camHUD];
 
+		loraySign.cameras = [camHUD];
+		lorayTxt.cameras = [camHUD];
+
 		startingSong = true;
 		
 		#if LUA_ALLOWED
 		for (notetype in noteTypes)
-			startLuasNamed('custom_notetypes/' + notetype + '.lua');
+			startLuasNamed('notetypes/' + notetype + '.lua');
 
 		for (event in eventsPushed)
-			startLuasNamed('custom_events/' + event + '.lua');
+			startLuasNamed('events/' + event + '.lua');
 		#end
 
 		#if HSCRIPT_ALLOWED
 		for (notetype in noteTypes)
-			startHScriptsNamed('custom_notetypes/' + notetype + '.hx');
+			startHScriptsNamed('notetypes/' + notetype + '.hx');
 
 		for (event in eventsPushed)
-			startHScriptsNamed('custom_events/' + event + '.hx');
+			startHScriptsNamed('events/' + event + '.hx');
 		#end
 		noteTypes = null;
 		eventsPushed = null;
@@ -630,6 +649,8 @@ class PlayState extends MusicBeatState
 		FlxG.stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyPress);
 		FlxG.stage.addEventListener(KeyboardEvent.KEY_UP, onKeyRelease);
 		callOnScripts('onCreatePost');
+
+		if (SONG.song.toLowerCase() == 'heartbeat') iconP2.visible = false;
 
 		cacheCountdown();
 		cachePopUpScore();
@@ -1606,6 +1627,20 @@ class PlayState extends MusicBeatState
 			} else {
 				boyfriendIdleTime = 0;
 			}
+		}
+
+		if (lorayTxt != null)
+		{
+			if (FlxG.mouse.overlaps(loraySign)) //Doesn't work with FlxTexts, so here's a workaround ig
+			{
+				lorayTxt.color = 0x3fe780;
+				if (FlxG.mouse.justPressed)
+					CoolUtil.browserLoad('https://youtube.com/@LORAY_');
+			} else {
+				lorayTxt.color = 0xFFFFFF;
+			}
+		} else {
+			lorayTxt.color = 0xFFFFFF;
 		}
 
 		super.update(elapsed);
@@ -3516,9 +3551,37 @@ class PlayState extends MusicBeatState
 		}
 		FlxG.log.warn('Missing shader $name .frag AND .vert files!');
 		#else
-		FlxG.log.warn('This platform doesn\'t support Runtime Shaders!', false, false, FlxColor.RED);
+		FlxG.log.warn('This platform doesn\'t support Runtime Shaders!');
 		#end
 		return false;
 	}
 	#end
+
+	function showCredits()
+	{
+		if (creditsJSON.skip)
+		{
+			loraySign.x = -128;
+			lorayTxt.x = 97;
+		} else {
+			FlxTween.tween(loraySign, {x: -128}, Conductor.crochet / 300, {ease: FlxEase.bounceOut});
+			FlxTween.tween(lorayTxt, {x: 97}, Conductor.crochet / 300, {ease: FlxEase.bounceOut});
+		}
+
+		FlxG.mouse.visible = true;
+
+		new FlxTimer().start(4, function(tmr:FlxTimer)
+		{
+			FlxG.mouse.visible = false;
+			FlxTween.tween(lorayTxt, {x: -626}, Conductor.crochet / 250, {ease: FlxEase.quadIn});
+			FlxTween.tween(loraySign, {x: -851}, Conductor.crochet / 250, {
+				ease: FlxEase.quadIn, 
+				onComplete: function(twn:FlxTween)
+				{
+					loraySign.kill();
+					lorayTxt.kill();
+				}
+			});
+		});
+	}
 }

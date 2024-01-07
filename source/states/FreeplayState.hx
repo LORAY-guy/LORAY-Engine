@@ -148,7 +148,7 @@ class FreeplayState extends MusicBeatState
 		add(missingText);
 
 		if(curSelected >= songs.length) curSelected = 0;
-		bg.color = songs[curSelected].color;
+		if(songs[curSelected].color != -7179779) bg.color = songs[curSelected].color; else bg.color = -7179779;
 		intendedColor = bg.color;
 		lerpSelected = curSelected;
 
@@ -302,7 +302,7 @@ class FreeplayState extends MusicBeatState
 				colorTween.cancel();
 			}
 			FlxG.sound.play(Paths.sound('cancelMenu'));
-			MusicBeatState.switchState(new MainMenuState());
+			MusicBeatState.switchState(new FreeplaySelectState());
 		}
 
 		if(FlxG.keys.justPressed.CONTROL)

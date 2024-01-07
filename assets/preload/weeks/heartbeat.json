@@ -1,0 +1,22 @@
+{
+	"storyName": "heartbeat",
+	"difficulties": "Hard",
+	"hideFreeplay": false,
+	"weekBackground": "stage",
+	"freeplayColor": [
+		255, 31, 74
+	],
+	"weekBefore": "heartbeat",
+	"startUnlocked": true,
+	"weekCharacters": [
+		"",
+		"",
+		""
+	],
+	"songs": [
+		["Heartbeat", "lua", [255, 31, 74]]
+	],
+	"hideStoryMode": true,
+	"weekName": "heartbeat",
+	"hiddenUntilUnlocked": false
+}

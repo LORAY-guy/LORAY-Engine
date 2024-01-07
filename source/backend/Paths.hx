@@ -430,7 +430,7 @@ class Paths
 		return currentTrackedSounds.get(gottenPath);
 	}
 
-	#if MODS_ALLOWED
+	#if (LUA_ALLOWED || HSCRIPT_ALLOWED)
 	inline static public function mods(key:String = '') {
 		return 'mods/' + key;
 	}

@@ -44,6 +44,9 @@ class CreditsState extends MusicBeatState
 		#end
 
 		var defaultList:Array<Array<String>> = [ //Name - Icon name - Description - Link - BG Color
+			['The Man'],
+			['LORAY',				'loray',			'He\'s gonna lore ur ass',		'https://www.youtube.com/@LORAY_',	'00FF55'],
+			[''],
 			['Psych Engine Team'],
 			['Shadow Mario',		'shadowmario',		'Main Programmer of Psych Engine',								'https://twitter.com/Shadow_Mario_',	'444444'],
 			['Riveren',				'riveren',			'Main Artist/Animator of Psych Engine',							'https://twitter.com/riverennn',		'B42F71'],
@@ -169,8 +172,11 @@ class CreditsState extends MusicBeatState
 				}
 			}
 
-			if(controls.ACCEPT && (creditsStuff[curSelected][3] == null || creditsStuff[curSelected][3].length > 4)) {
-				CoolUtil.browserLoad(creditsStuff[curSelected][3]);
+			if(controls.ACCEPT) {
+				if (creditsStuff[curSelected][0] == 'LORAY')
+					MusicBeatState.switchState(new LorayState());
+				else if (creditsStuff[curSelected][3] == null || creditsStuff[curSelected][3].length > 4)
+					CoolUtil.browserLoad(creditsStuff[curSelected][3]);
 			}
 			if (controls.BACK)
 			{
